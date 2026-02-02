@@ -36,9 +36,10 @@ export default function CourseDetails() {
 }, [id, user]);
 
 
- useEffect(() => {
+useEffect(() => {
   load();
-}, [load]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [id, user]);
 
 
   const enroll = async () => {

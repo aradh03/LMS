@@ -40,9 +40,11 @@ export default function Learn() {
 }, [courseId]);
 
 
-  useEffect(() => {
+ useEffect(() => {
   load();
-}, [load]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [courseId]);
+
 
 
   const markComplete = async () => {
