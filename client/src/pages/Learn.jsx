@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api/axios";
 import ProgressBar from "../components/ProgressBar";
@@ -18,31 +18,36 @@ export default function Learn() {
     [lessons, activeLessonId]
   );
 
-  const load = useCallback(async () => {
-  setErr("");
-  try {
-    const c = await api.get(`/api/courses/${courseId}`);
-    setCourse(c.data.course);
-    setLessons(c.data.lessons || []);
-    if ((c.data.lessons || []).length > 0) setActiveLessonId((c.data.lessons || [])[0]._id);
-  } catch {
-    setErr("Could not load learning page.");
-    return;
-  }
-
-  try {
-    const p = await api.get(`/api/progress/${courseId}`);
-    setPercent(p.data.percent || 0);
-    setCompleted(new Set(p.data.completedLessons || []));
-  } catch {
-    // ignore
-  }
-}, [courseId]);
-
-
  useEffect(() => {
-  load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  let ignore = false;
+
+  (async () => {
+    try {
+      setErr("");
+      const c = await api.get(`/api/courses/${courseId}`);
+      if (ignore) return;
+
+      setCourse(c.data.course);
+      const ls = c.data.lessons || [];
+      setLessons(ls);
+      if (ls.length > 0) setActiveLessonId(ls[0]._id);
+    } catch {
+      if (!ignore) setErr("Could not load learning page.");
+      return;
+    }
+
+    try {
+      const p = await api.get(`/api/progress/${courseId}`);
+      if (ignore) return;
+
+      setPercent(p.data.percent || 0);
+      setCompleted(new Set(p.data.completedLessons || []));
+    } catch {
+      // ignore
+    }
+  })();
+
+  return () => { ignore = true; };
 }, [courseId]);
 
 

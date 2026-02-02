@@ -27,8 +27,8 @@ export default function AddLesson() {
 
  useEffect(() => {
   load().catch(() => setErr("Failed to load course."));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [courseId]);
+}, [load]);
+
 
 
 
