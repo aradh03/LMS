@@ -20,7 +20,17 @@ const certificateRoutes = require("./routes/certificate.routes");
 
 const app = express();
 
-app.use(cors());
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // local dev
+      process.env.CLIENT_URL   // production frontend
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // uploaded videos
