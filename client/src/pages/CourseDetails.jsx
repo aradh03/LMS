@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
@@ -14,28 +14,32 @@ export default function CourseDetails() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
-  async function load() {
-    setErr("");
-    try {
-      const c = await api.get(`/api/courses/${id}`);
-      setCourse(c.data.course);
-      setLessons(c.data.lessons || []);
-    } catch {
-      setErr("Could not load course.");
-    }
-
-    if (user) {
-      try {
-        const p = await api.get(`/api/progress/${id}`);
-        setProgress(p.data.percent || 0);
-        setEnrolled(!!p.data.enrolled);
-      } catch {
-        // ignore
-      }
-    }
+  const load = useCallback(async () => {
+  setErr("");
+  try {
+    const c = await api.get(`/api/courses/${id}`);
+    setCourse(c.data.course);
+    setLessons(c.data.lessons || []);
+  } catch {
+    setErr("Could not load course.");
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [id, user]);
+  if (user) {
+    try {
+      const p = await api.get(`/api/progress/${id}`);
+      setProgress(p.data.percent || 0);
+      setEnrolled(!!p.data.enrolled);
+    } catch {
+      // ignore
+    }
+  }
+}, [id, user]);
+
+
+ useEffect(() => {
+  load();
+}, [load]);
+
 
   const enroll = async () => {
     setMsg("");

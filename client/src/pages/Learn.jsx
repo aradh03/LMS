@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api/axios";
 import ProgressBar from "../components/ProgressBar";
@@ -18,29 +18,32 @@ export default function Learn() {
     [lessons, activeLessonId]
   );
 
-  async function load() {
-    setErr("");
-    try {
-      // backend suggestion: GET /api/courses/:id returns {course, lessons}
-      const c = await api.get(`/api/courses/${courseId}`);
-      setCourse(c.data.course);
-      setLessons(c.data.lessons || []);
-      if ((c.data.lessons || []).length > 0) setActiveLessonId((c.data.lessons || [])[0]._id);
-    } catch {
-      setErr("Could not load learning page.");
-      return;
-    }
-
-    try {
-      const p = await api.get(`/api/progress/${courseId}`);
-      setPercent(p.data.percent || 0);
-      setCompleted(new Set(p.data.completedLessons || []));
-    } catch {
-      // ignore
-    }
+  const load = useCallback(async () => {
+  setErr("");
+  try {
+    const c = await api.get(`/api/courses/${courseId}`);
+    setCourse(c.data.course);
+    setLessons(c.data.lessons || []);
+    if ((c.data.lessons || []).length > 0) setActiveLessonId((c.data.lessons || [])[0]._id);
+  } catch {
+    setErr("Could not load learning page.");
+    return;
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [courseId]);
+  try {
+    const p = await api.get(`/api/progress/${courseId}`);
+    setPercent(p.data.percent || 0);
+    setCompleted(new Set(p.data.completedLessons || []));
+  } catch {
+    // ignore
+  }
+}, [courseId]);
+
+
+  useEffect(() => {
+  load();
+}, [load]);
+
 
   const markComplete = async () => {
     if (!activeLessonId) return;

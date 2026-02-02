@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api/axios";
 
@@ -16,15 +16,19 @@ export default function AddLesson() {
   const [err, setErr] = useState("");
   const [uploading, setUploading] = useState(false);
 
-  async function load() {
-    setErr("");
-    const res = await api.get(`/api/courses/${courseId}`);
-    setCourse(res.data.course);
-    setLessons(res.data.lessons || []);
-    setOrder((res.data.lessons || []).length + 1);
-  }
+  const load = useCallback(async () => {
+  setErr("");
+  const res = await api.get(`/api/courses/${courseId}`);
+  setCourse(res.data.course);
+  setLessons(res.data.lessons || []);
+  setOrder((res.data.lessons || []).length + 1);
+}, [courseId]);
 
-  useEffect(() => { load().catch(() => setErr("Failed to load course.")); }, [courseId]);
+
+  useEffect(() => {
+  load().catch(() => setErr("Failed to load course."));
+}, [load]);
+
 
   const submit = async (e) => {
     e.preventDefault();
